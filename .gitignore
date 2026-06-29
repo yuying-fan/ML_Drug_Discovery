@@ -11,4 +11,4 @@ __pycache__/
 # regenerable
 *.npy
 *.joblib
-*.csv
+/notebook/*.csv
