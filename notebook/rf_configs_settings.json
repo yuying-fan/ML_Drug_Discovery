@@ -1,0 +1,51 @@
+{
+  "ATOMPAIR": {
+    "max_depth": null,
+    "max_features": 0.1,
+    "min_samples_leaf": 1,
+    "min_samples_split": 5,
+    "n_estimators": 451
+  },
+  "ECFP4": {
+    "max_depth": null,
+    "max_features": 0.3,
+    "min_samples_leaf": 3,
+    "min_samples_split": 6,
+    "n_estimators": 418
+  },
+  "ECFP6": {
+    "max_depth": null,
+    "max_features": 0.1,
+    "min_samples_leaf": 3,
+    "min_samples_split": 4,
+    "n_estimators": 356
+  },
+  "FCFP4": {
+    "max_depth": 30,
+    "max_features": 0.3,
+    "min_samples_leaf": 2,
+    "min_samples_split": 2,
+    "n_estimators": 326
+  },
+  "RDK": {
+    "max_depth": 30,
+    "max_features": 0.3,
+    "min_samples_leaf": 2,
+    "min_samples_split": 9,
+    "n_estimators": 216
+  },
+  "TOPTOR": {
+    "max_depth": null,
+    "max_features": 0.1,
+    "min_samples_leaf": 2,
+    "min_samples_split": 16,
+    "n_estimators": 478
+  },
+  "AVALON": {
+    "max_depth": null,
+    "max_features": 0.3,
+    "min_samples_leaf": 3,
+    "min_samples_split": 6,
+    "n_estimators": 415
+  }
+}

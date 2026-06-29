@@ -1,0 +1,14 @@
+/input_data
+/.env
+catboost_info/
+
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+*.parquet
+
+# regenerable
+*.npy
+*.joblib
+*.csv

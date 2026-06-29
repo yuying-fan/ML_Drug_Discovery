@@ -1,0 +1,27 @@
+name: ml_drug_discovery
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.11
+  - seaborn
+  - ipykernel
+  - scikit-learn
+  - scipy
+  - pympler
+  - altair
+  - umap-learn
+  - catboost
+  - pillow
+  - hdbscan
+  - jupyter
+  - numpy
+  - rdkit
+  - gdown
+  - matplotlib
+  - pandas
+  - pyarrow
+  - more-itertools
+  - tqdm
+  - xgboost
+prefix: /Users/yuyingfan/miniforge3/envs/ml_drug_discovery
