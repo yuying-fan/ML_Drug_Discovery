@@ -9,11 +9,10 @@ Place the following files in this `data/` directory before running
 | `crosstalk_test_inputs.parquet` | ASMS test set (339,258 molecules) as fingerprints, MW, AlogP — no labels. Predictions are generated for these. |
 
 These files were provided by the challenge organizers via the AIRCHECK
-platform. Download them from the source you were given for the competition and
-copy them here.
+platform. Download and copy them here.
 
 Validation is performed by cross-validation on the labelled training set (see
-`src/eval.py`), so no labelled test file is required.
+`src/eval.py`).
 
 ## Fingerprint columns
 
