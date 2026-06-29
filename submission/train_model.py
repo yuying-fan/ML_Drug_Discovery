@@ -35,7 +35,7 @@ from scipy.stats import rankdata
 from lightgbm import LGBMClassifier
 
 from src.dataset import load_data, test_ids, fp_matrix, build_set1_pca, SET123
-from src.eval import cv_metrics_with_ci, print_cv_report
+from src.eval import ensemble_cv_metrics_with_ci, print_cv_report
 
 warnings.filterwarnings("ignore", message="X does not have valid feature names")
 
@@ -44,7 +44,7 @@ TRAIN_PATH = "data/crosstalk_train.parquet"
 TEST_PATH = "data/crosstalk_test_inputs.parquet"
 LGB_CONFIG_PATH = "lgb_configs_settings.json"            # tuned hyperparameters
 
-# ---- fusion weight (0.80 = winning Kaggle submission) ----
+# ---- fusion weight (chosen on the robust 0.70-0.80 plateau; 0.80 = winning submission) ----
 FUSION_W = 0.80
 
 
@@ -112,14 +112,17 @@ def main(skip_tabpfn=False, skip_validation=False):
           f"hit rate: {y_train.mean():.4f}")
 
     # ---- 1. local validation: grouped CV AUROC/AUPRC with confidence intervals ----
-    #    Validation uses ONLY the labelled training set (grouped on BB2 so DEL
-    #    siblings never span the train/val split).
+    #    Validates the ACTUAL final model (set1+2+3 ensemble) via grouped CV on a
+    #    60k subsample (grouped on BB2 so DEL siblings never span the train/val
+    #    split). Uses only the labelled training set.
     if not skip_validation:
-        print("\nValidating LightGBM (grouped 5-fold CV on ECFP6)...")
-        groups = train["DEL_ID"].str.split("-").str[2].to_numpy()   # BB2
-        X = fp_matrix(train, "ECFP6")
-        metrics = cv_metrics_with_ci(
-            lambda: lgb_ctor(configs["ECFP6"]), X, y_train, groups)
+        print("\nValidating LightGBM ensemble (set1+2+3, grouped 5-fold CV)...")
+        rng = np.random.default_rng(42)
+        sub_idx = rng.choice(len(train), size=min(60000, len(train)), replace=False)
+        groups = train["DEL_ID"].str.split("-").str[2].to_numpy()[sub_idx]   # BB2
+        y_sub = y_train[sub_idx]
+        metrics = ensemble_cv_metrics_with_ci(
+            lgb_ctor, configs, SET123, fp_matrix, train, sub_idx, y_sub, groups)
         print_cv_report(metrics)
 
     # ---- 2. LightGBM ensemble (train on all data) ----

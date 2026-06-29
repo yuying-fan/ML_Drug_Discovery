@@ -23,8 +23,9 @@ grouped cross-validation (grouped on building block BB2 to prevent leakage).
 The TabPFN component is a tabular foundation model trained in-context on the Set 1 fingerprints (concatenated and PCA-compressed to 2,000 dimensions, retaining ~95% of the variance) over an upsampled 100k  subsample.  
 The two models are weakly correlated (Spearman ~0.04), which is why fusing them helped: TabPFN ranks some true hits moderately well that LightGBM ranks just outside its top compounds, and the fusion likelt surfaces them.
 
-Model performance is validated by _grouped 5-fold cross-validation_ on the
-training set, grouped on building block BB2. **AUPRC** and **AUROC** are reported,
+Model performance is validated by **grouped 5-fold cross-validation of the
+full set1+2+3 ensemble**, computed on a 60k stratified subsample of the training
+set and grouped on building block BB2. **AUPRC** and **AUROC** are reported,
 each as a mean with a confidence interval across folds. Running `train_model.py` prints these CV
 metrics before training the final models.
 
