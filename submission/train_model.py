@@ -117,8 +117,10 @@ def main(skip_tabpfn=False, skip_validation=False):
     #    split). Uses only the labelled training set.
     if not skip_validation:
         print("\nValidating LightGBM ensemble (set1+2+3, grouped 5-fold CV)...")
-        rng = np.random.default_rng(42)
-        sub_idx = rng.choice(len(train), size=min(60000, len(train)), replace=False)
+        from sklearn.model_selection import train_test_split
+        # stratified 60k subsample
+        sub_idx, _ = train_test_split(np.arange(len(y_train)), train_size=60000,
+                                      stratify=y_train, random_state=42)
         groups = train["DEL_ID"].str.split("-").str[2].to_numpy()[sub_idx]   # BB2
         y_sub = y_train[sub_idx]
         metrics = ensemble_cv_metrics_with_ci(
