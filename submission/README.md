@@ -97,8 +97,9 @@ Run without this flag to regenerate TabPFN from scratch
 ### A note on `best_model.pkl`
 
 Because the final model is a *fusion*, `best_model.pkl` stores the artifacts
-needed to reproduce it: the tuned LightGBM hyperparameters, the fingerprint
-list, and the fusion weight. The TabPFN component is a foundation model loaded
-from its pretrained checkpoint at run time rather than a fitted object, so it is
-reconstructed by the script. Running `train_model.py` regenerates both models 
-and the fused `submission.csv` end to end.
+needed to rebuild it: the tuned LightGBM hyperparameters, the fingerprint list,
+and the fusion weight. The TabPFN component is a foundation model loaded from its
+pretrained checkpoint at run time rather than a fitted object, so it is
+reconstructed by the script rather than pickled. Running `train_model.py`
+rebuilds the LightGBM ensemble and regenerates TabPFN; see the reproducibility 
+note above regarding the exact submitted result.
