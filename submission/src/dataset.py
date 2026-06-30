@@ -60,6 +60,11 @@ def build_set1_pca(train, test, y_train, n_components=2000, n_total=100_000,
     components on the training set, and applies it to both train and test.
     Training rows are an upsampled 100k subsample: all hits plus a random
     sample of non-hits (~29% hit rate) to give TabPFN a balanced context.
+    NOTE: rebuilding these features in a different environment can yield 
+    small differences. Combined with TabPFN's own run-to-run variance, a
+    freshly regenerated TabPFN can result in different fusion predictions.
+    Pass --tabpfn-file to train_model.py to use the saved original TabPFN
+    predictions.
 
     Returns
     -------

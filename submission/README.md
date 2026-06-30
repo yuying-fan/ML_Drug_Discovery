@@ -53,7 +53,8 @@ submission_template/
    ```
    pip install -r requirements.txt
    ```
-2. Place datasets in `data/` (see `data/README.md`).
+2. Place datasets in `data/` (see `data/README.md`). The tuned LightGBM
+   hyperparameters are in `lgb_configs_settings.json` (loaded automatically).
 3. Run:
    ```
    python train_model.py
@@ -77,6 +78,21 @@ To reproduce the LightGBM-only baseline predictions without TabPFN:
 ```
 python train_model.py --skip-tabpfn
 ```
+
+### Reproducibility note
+
+The LightGBM ensemble is deterministic — it produces the same predictions every run.
+TabPFN is not; although it uses a fixed `random_state` (default 0), GPU floating-point
+operations are not bit-for-bit reproducible between runs. Also, regenerating the PCA
+features in a different environment can introduce small numerical differences. As a
+result, a freshly regenerated TabPFN can shift compounds, changing the fusion result 
+slightly.
+
+To reproduce the exact submitted result, pass the included original TabPFN predictions:
+```
+python train_model.py --tabpfn-file new_tabpfn_set1.npy
+```
+Run without this flag to regenerate TabPFN from scratch
 
 ### A note on `best_model.pkl`
 

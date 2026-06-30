@@ -21,7 +21,12 @@ Running this script:
 
 NOTE ON HARDWARE: the TabPFN component runs far faster on a GPU. The script
 auto-detects CUDA and uses it if available, otherwise falls back to CPU
-(functional but slow on the full test set).
+(functional but very slow on the full test set).
+
+NOTE ON REPRODUCIBILITY: TabPFN is not bit-for-bit deterministic across runs.
+To reproduce the exact submitted result, pass the included original TabPFN 
+predictions via --tabpfn-file new_tabpfn_set1.npy. The LightGBM ensemble 
+is deterministic (same predictions every run).
 """
 
 import argparse
@@ -50,7 +55,7 @@ FUSION_W = 0.80
 
 def lgb_ctor(cfg):
     """Construct a LightGBM classifier from a tuned per-fingerprint config."""
-    return LGBMClassifier(**cfg, is_unbalance=True, n_jobs=-1,
+    return LGBMClassifier(**cfg, is_unbalance=True, n_jobs=4,
                           random_state=42, verbose=-1)
 
 
@@ -72,7 +77,7 @@ def tabpfn_predict(train, test, y_train):
     from tabpfn import TabPFNClassifier
     import torch
 
-    # TabPFN requires an API token; read it from the environment (never hard-coded)
+    # TabPFN requires an API token; read it from the environment
     if "TABPFN_TOKEN" not in os.environ:
         raise RuntimeError(
             "TabPFN requires an API token. Set it before running:\n"
@@ -103,7 +108,7 @@ def fuse(lgb_scores, tabpfn_scores, w=FUSION_W):
     return w * lr + (1 - w) * tr
 
 
-def main(skip_tabpfn=False, skip_validation=False):
+def main(skip_tabpfn=False, skip_validation=False, tabpfn_file=None):
     print("Loading data...")
     train, test, y_train = load_data(TRAIN_PATH, TEST_PATH)
     ids = test_ids(TEST_PATH)
@@ -136,8 +141,12 @@ def main(skip_tabpfn=False, skip_validation=False):
         print("\nSkipping TabPFN (--skip-tabpfn); submitting LightGBM only.")
         final_scores = lgb_scores
     else:
-        print("\nTraining TabPFN component (Set 1, upsampled 100k)...")
-        tabpfn_scores = tabpfn_predict(train, test, y_train)
+        if tabpfn_file:
+            print(f"\nLoading saved TabPFN predictions from {tabpfn_file}")
+            tabpfn_scores = np.load(tabpfn_file)
+        else:
+            print("\nTraining TabPFN component (Set 1, upsampled 100k)...")
+            tabpfn_scores = tabpfn_predict(train, test, y_train)
         print(f"\nFusing: {FUSION_W} * LightGBM + {1 - FUSION_W:.1f} * TabPFN")
         final_scores = fuse(lgb_scores, tabpfn_scores)
 
@@ -163,5 +172,9 @@ if __name__ == "__main__":
                         help="train LightGBM only (skip the GPU TabPFN step)")
     parser.add_argument("--skip-validation", action="store_true",
                         help="skip the cross-validation step (faster)")
+    parser.add_argument("--tabpfn-file", default=None,
+                        help="path to saved TabPFN predictions (.npy); if given, "
+                             "these are used instead of running TabPFN fresh ")
     args = parser.parse_args()
-    main(skip_tabpfn=args.skip_tabpfn, skip_validation=args.skip_validation)
+    main(skip_tabpfn=args.skip_tabpfn, skip_validation=args.skip_validation,
+         tabpfn_file=args.tabpfn_file)
