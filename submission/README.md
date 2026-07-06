@@ -32,19 +32,20 @@ metrics before training the final models.
 ## Structure
 
 ```
-submission_template/
-├── README.md             <- This file
-├── requirements.txt      <- Package requirements
-├── train_model.py        <- Training + prediction script
+submission/
+├── README.md                  <- This file
+├── requirements.txt           <- Package requirements
+├── train_model.py             <- Training + prediction script
 ├── lgb_configs_settings.json  <- Tuned LightGBM hyperparameters (per fingerprint)
+├── new_tabpfn_set1.npy        <- Original TabPFN output; pass via --tabpfn-file
 ├── data/
-│   └── README.md         <- Dataset setup instructions
+│   └── README.md              <- Dataset setup instructions
 ├── models/
-│   └── best_model.pkl    <- Saved LightGBM configs + fusion recipe (written by the script)
+│   └── best_model.pkl         <- Saved LightGBM configs + fusion recipe (written by the script)
 └── src/
     ├── __init__.py
-    ├── dataset.py        <- Data loaders + feature builders
-    └── eval.py           <- Cross-validated AUROC/AUPRC with confidence intervals
+    ├── dataset.py             <- Data loaders + feature builders
+    └── eval.py                <- Cross-validated AUROC/AUPRC with confidence intervals
 ```
 
 ## How to run
