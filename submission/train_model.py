@@ -62,13 +62,14 @@ def lgb_ctor(cfg):
 def lightgbm_ensemble_predict(train, test, y_train, configs):
     """Train one tuned LightGBM per fingerprint and average their probabilities."""
     from tqdm import tqdm
-    per_fp = []
+    per_fp, fitted = [], {}
     for fp in tqdm(SET123, desc="LightGBM ensemble (7 fingerprints)"):
         tqdm.write(f"  training {fp}...")
         model = lgb_ctor(configs[fp])
         model.fit(fp_matrix(train, fp), y_train)
+        fitted[fp] = model
         per_fp.append(model.predict_proba(fp_matrix(test, fp))[:, 1])
-    return np.mean(per_fp, axis=0), per_fp
+    return np.mean(per_fp, axis=0), fitted
 
 
 def tabpfn_predict(train, test, y_train):
@@ -108,7 +109,7 @@ def fuse(lgb_scores, tabpfn_scores, w=FUSION_W):
     return w * lr + (1 - w) * tr
 
 
-def main(skip_tabpfn=False, skip_validation=False, tabpfn_file=None):
+def main(skip_tabpfn=False, skip_validation=False, tabpfn_file=None, save_models=False):
     print("Loading data...")
     train, test, y_train = load_data(TRAIN_PATH, TEST_PATH)
     ids = test_ids(TEST_PATH)
@@ -134,7 +135,14 @@ def main(skip_tabpfn=False, skip_validation=False, tabpfn_file=None):
 
     # ---- 2. LightGBM ensemble (train on all data) ----
     print("\nTraining LightGBM ensemble (7 fingerprints)...")
-    lgb_scores, _ = lightgbm_ensemble_predict(train, test, y_train, configs)
+    lgb_scores, fitted_models = lightgbm_ensemble_predict(train, test, y_train, configs)
+
+    # ---- optionally save the fitted LightGBM models + fitted Set1 PCA ----
+    if save_models:
+        from src.dataset import build_and_save_set1_pca
+        joblib.dump(fitted_models, "models/lgb_fitted_models.pkl")
+        print("Saved fitted LightGBM models to models/lgb_fitted_models.pkl")
+        build_and_save_set1_pca(train, "models/set1_pca.pkl")
 
     # ---- 3. TabPFN ----
     if skip_tabpfn:
@@ -175,6 +183,8 @@ if __name__ == "__main__":
     parser.add_argument("--tabpfn-file", default=None,
                         help="path to saved TabPFN predictions (.npy); if given, "
                              "these are used instead of running TabPFN fresh ")
+    parser.add_argument("--save-models", action="store_true",
+                        help="save fitted LightGBM models + Set1 PCA to models/")
     args = parser.parse_args()
     main(skip_tabpfn=args.skip_tabpfn, skip_validation=args.skip_validation,
-         tabpfn_file=args.tabpfn_file)
+         tabpfn_file=args.tabpfn_file, save_models=args.save_models)

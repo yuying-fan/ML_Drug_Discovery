@@ -41,7 +41,9 @@ submission/
 ├── data/
 │   └── README.md              <- Dataset setup instructions
 ├── models/
-│   └── best_model.pkl         <- Saved LightGBM configs + fusion recipe (written by the script)
+│   ├── best_model.pkl          <- LightGBM configs + fusion recipe
+│   ├── lgb_fitted_models.pkl   <- 7 fitted LightGBM models (load + predict directly)
+│   └── set1_pca.pkl            <- Fitted Set1 PCA 
 └── src/
     ├── __init__.py
     ├── dataset.py             <- Data loaders + feature builders
@@ -95,12 +97,24 @@ python train_model.py --tabpfn-file new_tabpfn_set1.npy
 ```
 Run without this flag to regenerate TabPFN from scratch
 
-### A note on `best_model.pkl`
+### Saved models (`models/`)
 
-Because the final model is a *fusion*, `best_model.pkl` stores the artifacts
-needed to rebuild it: the tuned LightGBM hyperparameters, the fingerprint list,
-and the fusion weight. The TabPFN component is a foundation model loaded from its
-pretrained checkpoint at run time rather than a fitted object, so it is
-reconstructed by the script rather than pickled. Running `train_model.py`
-rebuilds the LightGBM ensemble and regenerates TabPFN; see the reproducibility 
-note above regarding the exact submitted result.
+The `models/` folder containss:
+
+- **`lgb_fitted_models.pkl`** — the seven fitted LightGBM models (one per
+  fingerprint), stored as a dict keyed by fingerprint name. Load with joblib and
+  call `.predict_proba()` directly to score new compounds without retraining.
+- **`set1_pca.pkl`** — the fitted Set 1 PCA (ECFP6 + RDK + ATOMPAIR → 2,000
+  components). Apply this same transform to new compounds' fingerprints before
+  scoring them with TabPFN, so they land in the same feature space the model expects.
+- **`best_model.pkl`** — the fusion configuration bundle: the tuned LightGBM
+  hyperparameters, the fingerprint list, and the fusion weight.
+
+The TabPFN component is a foundation model loaded from its pretrained checkpoint
+at run time rather than a fitted object, so it is not serialized here; its original
+predictions are provided as `new_tabpfn_set1.npy` (see the reproducibility note above).
+
+To regenerate the fitted LightGBM models and PCA yourself:
+```
+python train_model.py --skip-tabpfn --skip-validation --save-models
+```

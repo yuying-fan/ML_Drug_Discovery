@@ -90,3 +90,19 @@ def build_set1_pca(train, test, y_train, n_components=2000, n_total=100_000,
     xs = Xtr_pca[sub]
     ys = y_train[sub]
     return xs, ys, Xte_pca
+
+def build_and_save_set1_pca(train, out_path="models/set1_pca.pkl",
+                            n_components=2000, seed=42):
+    """
+    Fit the Set 1 PCA (ECFP6 + RDK + ATOMPAIR -> 2000 components) on the
+    training set and save the fitted object with joblib. This is the PCA
+    used to preprocess features for TabPFN; saving it lets the same
+    transform be applied to new compounds without refitting.
+    """
+    import joblib
+    Xtr = np.hstack([fp_matrix(train, fp).toarray() for fp in SET1])
+    pca = PCA(n_components=n_components, random_state=seed).fit(Xtr)
+    joblib.dump(pca, out_path)
+    print(f"Saved Set1 PCA to {out_path} "
+          f"({pca.explained_variance_ratio_.sum():.1%} variance)")
+    return pca
