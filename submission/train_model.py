@@ -94,6 +94,10 @@ def tabpfn_predict(train, test, y_train):
     clf = TabPFNClassifier(device=device, ignore_pretraining_limits=True)
     clf.fit(xs, ys)
 
+    # save the fitted TabPFN (small file — omits foundation weights)
+    clf.save_fit_state("models/tabpfn_set1_fitted.tabpfn_fit")
+    print("  Saved fitted TabPFN to models/tabpfn_set1_fitted.tabpfn_fit")
+
     from tqdm import tqdm
     preds = np.concatenate([
         clf.predict_proba(X_test[i:i + 5000])[:, 1]
